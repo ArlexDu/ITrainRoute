@@ -6,7 +6,7 @@
       {
          "name": "G2",
          "info": "G2车次 上海虹桥-->北京南站",
-         "route": "京沪高铁线路", 
+         "route": "line1", 
          "stops":
          [
             {
