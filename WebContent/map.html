@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+html,body{height:100%;margin:0;padding:0;}
+#googleMap{
+	height:100%;
+}
+</style>
+<script src="transit-min.js"></script>
+<script async defer
+src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCDykW_7NmqeCK-TdmS2UE7wYHvYdr_ccg&callback=initialize">
+</script>
+<script src="jquery-1.12.1.js"></script>
+<script>
+function initialize()
+{
+ transit.initialize("#googleMap",
+                               "BeijingShanghai.kml",
+                               "https://raw.github.com/pranavrc/transit/gh-pages/railroad_to_rome/railroad_to_rome.kml",
+                               "trains.json");
+}
+
+</script>
+</head>
+
+<body>
+<div id="googleMap"></div>
+
+</body>
+</html>
