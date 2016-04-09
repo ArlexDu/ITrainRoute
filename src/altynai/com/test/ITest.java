@@ -14,7 +14,9 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -49,7 +51,7 @@ import net.sf.json.JSONObject;
 
 
 public class ITest {
-	
+ 
  private ArrayList<GTrain> Gtrains = new ArrayList<GTrain>();
  
  public static SSLContext createIgnoreVerifySSL() throws KeyManagementException, NoSuchAlgorithmException{
@@ -130,7 +132,8 @@ public class ITest {
         				 train.setInfo(station.getString("start_station_name")+ "——＞" +station.getString("end_station_name"));
         			 }
         			 GStation gstation = new GStation();
-        			 if(i==start&&!station.getString("station_name").equals("上海虹桥")){
+        			 if(i==start&&!station.getString("station_name").equals("上海虹桥")
+        					 &&!station.getString("station_name").equals("北京南")){
         				 start++;
         				 continue;
         			 }
@@ -149,6 +152,7 @@ public class ITest {
     				 }
     				 gstation.setArrival(arrival);
     				 gstation.setDeparture(departure);
+    				 
     				 stations.add(gstation);
         		 }
         		 train.setStops(stations);
@@ -185,10 +189,12 @@ public class ITest {
 	 JSONObject train = JSONObject.fromObject(str);
 	 JSONArray trains = train.getJSONArray("trains");
 	 int length = trains.length();
+//	 System.out.println("wholelength:"+length);//68
 	 for(int i = 0 ; i < length ; i++){
 		 JSONObject ob = trains.getJSONObject(i);
 		 String train_no = ob.getString("id");
-		 String url = "https://kyfw.12306.cn/otn/czxx/queryByTrainNo?train_no="+train_no+"&from_station_telecode=AOH&to_station_telecode=VNP&depart_date=2016-05-03";
+		 String date =getDate();
+		 String url = "https://kyfw.12306.cn/otn/czxx/queryByTrainNo?train_no="+train_no+"&from_station_telecode=AOH&to_station_telecode=VNP&depart_date="+date;
 		 try {
 			getTrainInfo(url);
 		} catch (Exception e) {
@@ -199,8 +205,8 @@ public class ITest {
 	 JSONArray data = JSONArray.fromObject(Gtrains);
 	 FileWriter file = null;
 	 try {
-	 file = new FileWriter("D:\\Eclipse\\Project_Web\\ITrainRoute\\WebContent\\WEB-LIB\\detail.json",false);
-	 file.write(data.toString());
+	 file = new FileWriter("D:\\Eclipse\\Project_Web\\ITrainRoute\\WebContent\\WEB-LIB\\detail.json",true);
+	 file.write(data.toString()+"\n");
 	 file.flush();
 	 file.close();
 	 } catch (Exception e) {
@@ -208,6 +214,13 @@ public class ITest {
 			e.printStackTrace();
 	 }finally {
 	}
+ }
+ 
+ //获取当前系统的时间
+ private String getDate(){
+	SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+	String date = df.format(new Date());
+	return date;
  }
  
 }
