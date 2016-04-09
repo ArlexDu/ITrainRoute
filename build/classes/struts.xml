@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+	"http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<struts>
+	<constant name="struts.configuration.xml.reload" value="true"></constant>
+	<!-- web端对应的action -->
+	<package name="edu.tongji.amazing.action" namespace="/web" extends="struts-default">
+        <!-- 相当于servlet，也就是对应一个name的请求，它的rul为
+        localhost:8080/项目名称/namespace/name.action或者localhost:8080/项目名称/namespace/name.do -->
+
+      </package> 
+     
+  
+</struts>
