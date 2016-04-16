@@ -16,7 +16,8 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class Weather {
-
+//	天气api
+//	http://openweathermap.org/
 	public String getInfo(String lat, String lon) {
 		CloseableHttpClient client = HttpClients.createDefault();
 		HttpGet get = new HttpGet("http://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon);
