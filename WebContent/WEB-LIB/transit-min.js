@@ -1,17 +1,24 @@
+//声明一个transit的总类
 var transit = function() {
     return {
+//    	e:地图 t：火车停靠点 n：火车路线上的点 r:是否显示log按钮 i:是否显示搜索框
         initMap: function(e, t, n, r, i) {
             var s = {
-                mapTypeId: google.maps.MapTypeId.HYBRID
+                mapTypeId: google.maps.MapTypeId.HYBRID,
+                zoom:8,
+                minZoom:7,
+                maxZoom:13
             };
             $(e + "> #init").html("");
+//            显示时区
             $(e).append('<div id="timezone"></div>');
             $(e + "> #timezone").css({
                 position: "absolute",
                 bottom: "3%",
-                right: "0.8%",
+                right: "3%",
                 "z-index": "99",
-                "font-weight": "bold"
+                "font-weight": "bold",
+                "color":"#ffffff"
             });
             $(e).append('<div id="transitMap"></div>');
             $(e + "> #transitMap").css({
@@ -120,7 +127,7 @@ var transit = function() {
             $("head").append('<link rel="stylesheet" ' + 'href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />');
             $.getScript("http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js",
             function() {
-                $(e).append('<input type="text" id="search" ' + 'placeholder="Search for a stop and select it from the dropdown.">');
+                $(e).append('<input type="text" id="search" ' + 'placeholder="请输入您想要查找的站点.">');
                 var i = e + "> #search";
                 $(i).css({
                     position: "absolute",
@@ -164,21 +171,20 @@ var transit = function() {
             o = new google.maps.Marker(o);
             return o
         },
+//      e:地图控件 t:地图 n:列车的标志点 r:
         onMarkerMouseover: function(e, t, n, r, i) {
-            if (i) {
                 google.maps.event.clearListeners(n, "mouseover");
                 google.maps.event.clearListeners(n, "mouseout");
                 google.maps.event.addListener(n, "mouseover",
                 function() {
-                    $(e + "> #status").stop(true, true);
-                    $(e + "> #status").css("display", "inline");
-                    $(e + "> #status").html(r)
+//                    $(e + "> #status").stop(true, true);
+//                    $(e + "> #status").css("display", "inline");
+//                    $(e + "> #status").html(r)
                 });
                 google.maps.event.addListener(n, "mouseout",
                 function() {
-                    $(e + "> #status").css("display", "none")
+//                    $(e + "> #status").css("display", "none")
                 })
-            }
             if (typeof n.infoWindow != "undefined") {
                 n.infoWindow.setContent(r)
             } else {
@@ -201,6 +207,7 @@ var transit = function() {
             };
             var r = new google.maps.KmlLayer(e, n)
         },
+//        请求服务器，获得kml的文件内容
         kmlPromise: function(e) {
             return $.ajax({
                 url: e,
@@ -208,10 +215,23 @@ var transit = function() {
                 async: true
             })
         },
+//        请求服务器获得火车的json信息
         jsonPromise: function(e) {
             return $.ajax({
                 url: e,
                 dataType: "json",
+                async: true
+            })
+        },
+//        获得天气数据
+        getweather:function(j,w) {
+            return $.ajax({
+                url: "http://localhost:8080/ITrainRoute/weather",
+                data:{
+                	lat:j,
+                	lon:w
+                },
+                type:'get',
                 async: true
             })
         },
@@ -476,16 +496,19 @@ var transit = function() {
             var i = r < 0 ? 6 + r % 7 : r % 7;
             return i
         },
+//        e 当前时间的字符串
         parseTime: function(e, t) {
             var n = /^(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9](:[0-5]?[0-9])?$/;
             if (!n.test(e)) throw new Error(e + " is not a valid timestring.");
             var r = e.split(":");
-            r = r.map(function(e) {
+            r = r.map(function(e) {//把e的每一项都放入r中
                 return parseInt(e, 10)
             });
             if (r.length < 3) r[2] = 0;
+//          86400是一天的秒数，这里返回当前时间的一天内过的秒数
             return r[0] * 3600 + r[1] * 60 + r[2] + (t - 1) * 86400
         },
+//        获得当前的时间
         currTime: function() {
             var e = new Date;
             return e.getHours().toString() + ":" + e.getMinutes().toString() + ":" + e.getSeconds().toString()
@@ -499,12 +522,13 @@ var transit = function() {
             if (e >= 0) return "+" + s;
             else return "-" + s
         },
+//      e：列车信息 t:时区
         estimateCurrentPosition: function(e, t) {
             var n = e.arrivals;
             var r = e.departures;
             var i = e.traveltimes;
             var s = e.traveltimesasstrings;
-            var o = e.days;
+            var o = e.days;//京沪高铁 o为1
             var u = e.starts;
             var a = e.route;
             var f = e.stops;
@@ -512,6 +536,7 @@ var transit = function() {
             var c = (new Date).getTimezoneOffset() * 60;
             var h = transit.currTime();
             for (var p = 1; p <= o + 1; p++) {
+//            	返回则是travel的时间
                 var d = transit.enclosure.call(i, transit.parseTime(h, p) + transit.parseTimeZone(t) % 86400 - u);
                 var v = {
                     stationaryAt: "",
@@ -547,6 +572,7 @@ var transit = function() {
                     var A = C[k[1]];
                     var O = transit.percentInRange(L, A, S);
                     v.currentCoords = transit.percentDist(N[L], N[A], O)
+//                	console.log(v.currentCoords.x+" "+v.currentCoords.y);
                 } else {
                     if (d[0] % 2 != 0 && d.length == 2) {
                         v.stationaryAt = r[i[d[1]]];
@@ -585,11 +611,34 @@ var transit = function() {
         createBaseInfo: function(e, t, n, r, i, s) {
             return "<strong>Vehicle: </strong>" + e + "<br />" + (typeof t != "undefined" ? "<strong>Info: </strong>" + t + "<br />": "") + "<strong>Start: </strong>" + n + " (" + r + ")<br />" + "<strong>End: </strong>" + i + " (" + s + ")<br />"
         },
+//        e:基础信息 t:列车的位置信息 
         createPositionInfo: function(e, t) {
             if (t.stationaryAt) {
-                return e + "<strong>At: </strong>" + t.stationaryAt + "<br />" + "<strong>Departure: </strong>" + t.departureTime
+                return e + "<strong>At: </strong>" + t.stationaryAt + "<br />" + "<strong>Departure: </strong>" + t.departureTime+ "<br />"
             } else {
-                return e + "<strong>Left: </strong>" + t.leaving + " (" + t.leftTime + ")" + "<br />" + "<strong>Approaching: </strong>" + t.approaching + " (" + t.approachTime + ")"
+                return e + "<strong>Left: </strong>" + t.leaving + " (" + t.leftTime + ")" + "<br />" + "<strong>Approaching: </strong>" + t.approaching + " (" + t.approachTime + ")"+ "<br />"
+            }
+        },
+//        调用天气信息的接口获得天气信息
+        ceateWeatherInfo: function(e,weather,f,lastCoords,l) {
+            if(lastCoords[f] == null || Math.abs(lastCoords[f].x-l.currentCoords.x)>0.5|| Math.abs(lastCoords[f].y-l.currentCoords.y)>1){
+                
+//            	console.log("请求天气")
+        		lastCoords[f] = l.currentCoords;
+            	var done = transit.getweather(l.currentCoords.x, l.currentCoords.y)
+            	done.success(function(data){
+            		if(data.weather!="null"){
+            			weather[f] = data.weather;
+//            			console.log("weather is "+weather[f]);
+            		}else{
+            			lastCoords[f] = null
+            		}
+            	});
+            }
+            if(weather[f] == undefined){
+            	return e 
+            }else{
+            	return e + "<strong>Weather: </strong>" + weather[f]
             }
         },
         writeLog: function(e, t, n) {
@@ -615,9 +664,13 @@ var transit = function() {
             if (/(android|ipad|playbook|silk|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(e) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(e.substr(0, 4))) return true;
             else return false
         },
+//      e:地图html控件  t:1000 n：火车信息json r:列车的数量  i：列车的停靠时间 s:时区 o:地图  u:true
         setInMotion: function(e, t, n, r, i, s, o, u) {
-            var a = setInterval(function() {
+        	var weather = new Array;
+        	var lastCoords = new Array;
+            var a = setInterval(function() {//每隔tms刷新一次
                 for (var t = 0; t < r; t++) {
+//                	这里i重新定义 为列车的json数据
                     var i = n[t];
                     if (typeof i.markers == "undefined") {
                         i.markers = new Array
@@ -637,6 +690,7 @@ var transit = function() {
                             i.markers[f].setMap(null);
                             delete i.markers[f]
                         }
+//                        显示信息栏
                         var c = transit.createPositionInfo(i.baseinfo, l);
                         if (typeof i.markers[f] == "undefined") {
                             var h = transit.initMarker(l.currentCoords, e, o, i.color);
@@ -646,20 +700,27 @@ var transit = function() {
                             var p = new google.maps.LatLng(l.currentCoords.x, l.currentCoords.y);
                             i.markers[f].setPosition(p)
                         }
+                        c = transit.ceateWeatherInfo(c,weather,t,lastCoords,l);
                         transit.onMarkerMouseover(e, o, i.markers[f], c, u)
                     }
                 }
             },
             t)
         },
+//        e:maps t:1000 n：火车路线  r：列车的时刻表  i:远程火车路线图  s:是否显示log o=true u：undefined
         callMain: function(e, t, n, r, i, s, o, u) {
             var a = r.timezone;
             var f = r.stopinterval;
+//          返回一个地图的界面
             var l = transit.initMap(e, n.stopnames, n.points, s, o);
+//          远程的火车路线铺在本地地图的上方
             transit.overlayKml(i, l);
-            $("#timezone").append("UTC" + a + "/Local" + transit.secondsToHours(transit.parseTimeZone(a) % 86400));
+            $("#timezone").append("UTC" + a + "/Local " + transit.currTime())
+            setInterval(function() { 
+            	$("#timezone").text("UTC" + a + "/Local " + transit.currTime())
+            },1000)
             if (typeof u == "undefined") {
-                var u = r.vehicles;
+                var u = r.vehicles;//u成为列车的json数组
                 var c = u.length;
                 for (var h = 0; h < c; h++) {
                     try {
@@ -672,12 +733,15 @@ var transit = function() {
             } else {
                 var c = u.length
             }
+//            console.log("f is "+f);
             transit.setInMotion(e, t, u, c, f, a, l, s)
         },
+//       地图载入时候开始调用 e:google map t：本地kml地图  n:远程kml地图 r：json 配置文件  i:是否显示log
         initialize: function(e, t, n, r, i, s, o) {
             o = typeof o == "undefined" || o < 1 ? 1e3: o * 1e3;
             i = typeof i == "undefined" ? true: i;
             s = typeof s == "undefined" ? true: s;
+//            console.log("i is "+i);
             $(e).css({
                 position: "relative",
                 "font-family": '"Lucida Grande", "Lucida Sans Unicode",' + "Verdana, Arial, Helvetica, sans-serif",
@@ -689,7 +753,9 @@ var transit = function() {
             $(e + "> #init").html("Initialis(z)ing...");
             google.maps.event.addDomListener(window, "load",
             function() {
+//            	判断是否是xml的格式
                 var u = transit.kmlPromise(t);
+//                判断是否是json的文件
                 var a = transit.jsonPromise(r);
                 u.success(function(t) {
                     a.success(function(r) {

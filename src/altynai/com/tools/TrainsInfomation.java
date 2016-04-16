@@ -59,7 +59,7 @@ public class TrainsInfomation {
 			return sslContext;
 	 }
 	 
-	 private static String getStreamAsString(InputStream stream, String charset) throws IOException {
+	 public static String getStreamAsString(InputStream stream, String charset) throws IOException {
 	     try {
 	         BufferedReader reader = new BufferedReader(new InputStreamReader(stream, charset), 8192);
 	         StringWriter writer = new StringWriter();

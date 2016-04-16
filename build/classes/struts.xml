@@ -6,11 +6,14 @@
 <struts>
 	<constant name="struts.configuration.xml.reload" value="true"></constant>
 	<!-- web端对应的action -->
-	<package name="edu.tongji.amazing.action" namespace="/web" extends="struts-default">
-        <!-- 相当于servlet，也就是对应一个name的请求，它的rul为
-        localhost:8080/项目名称/namespace/name.action或者localhost:8080/项目名称/namespace/name.do -->
+	<package name="altynai.com.action" namespace="" extends="struts-default,json-default">
+        <action name="weather" class="altynai.com.action.Getweather">
+            <result name="success" type="json">
+                <param name="root">data</param>
+            </result>
+        </action>
 
-      </package> 
+    </package> 
      
   
 </struts>
