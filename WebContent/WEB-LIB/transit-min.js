@@ -1,6 +1,6 @@
 //声明一个transit的总类
 var transit = function() {
-	var weatherurl = "http://10.60.42.70:8080/ITrainRoute/weather"
+	var weatherurl = "http://localhost:8080/ITrainRoute/weather"
     return {
 //    	e:地图 t：火车停靠点 n：火车路线上的点 r:是否显示log按钮 i:是否显示搜索框
         initMap: function(e, t, n, r, i) {

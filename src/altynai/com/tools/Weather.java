@@ -20,7 +20,7 @@ public class Weather {
 //	http://openweathermap.org/
 	public String getInfo(String lat, String lon) {
 		CloseableHttpClient client = HttpClients.createDefault();
-		HttpGet get = new HttpGet("http://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon);
+		HttpGet get = new HttpGet("http://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon+"&appid=c66e75bbaf301fb512c2f6354ac66f57");
 		CloseableHttpResponse response = null;
 		try {
 			response = client.execute(get);
@@ -28,7 +28,7 @@ public class Weather {
 			if (entity != null) {
 				InputStream inputStream = entity.getContent();
 				String info = TrainsInfomation.getStreamAsString(inputStream, "UTF-8");
-				System.out.println(info);
+//				System.out.println(info);
 				JSONObject object = JSONObject.fromString(info);
 				JSONArray weather = object.getJSONArray("weather");
 				String mainweather = weather.getJSONObject(0).getString("main");

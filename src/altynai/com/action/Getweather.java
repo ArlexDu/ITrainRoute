@@ -19,6 +19,7 @@ public class Getweather extends ActionSupport {
 	public String execute() throws Exception {
 		// TODO Auto-generated method stub
 	   data = new HashMap<String,Object>();
+//	   System.out.println("Get Weather");
        weather = new Weather();
        String info = weather.getInfo(lat, lon);
        data.put("weather", info);
